@@ -24,6 +24,11 @@
 
 #import <UIKit/UIKit.h>
 
+typedef NS_ENUM(NSUInteger, SevenSwitchIconDisplayType) {
+    SevenSwitchIconDisplayTypeBackground,
+    SevenSwitchIconDisplayTypeKnob
+};
+
 @interface SevenSwitch : UIControl
 
 /*
@@ -90,6 +95,10 @@
  */
 @property (nonatomic, strong) UIImage *offImage;
 
+/*
+ * Sets wether the on/off icons should be drawn on the background or inside of the knob.
+ */
+@property (nonatomic, assign) SevenSwitchIconDisplayType iconDisplayType;
 
 /*
  * Set whether the switch is on or off. Optionally animate the change
