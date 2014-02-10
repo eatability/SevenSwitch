@@ -95,6 +95,9 @@ typedef NS_ENUM(NSUInteger, SevenSwitchIconDisplayType) {
  */
 @property (nonatomic, strong) UIImage *offImage;
 
+/*
+ * Sets wether the on/off icons should be drawn on the background or inside of the knob.
+ */
 @property (nonatomic, assign) SevenSwitchIconDisplayType iconDisplayType;
 
 /*
