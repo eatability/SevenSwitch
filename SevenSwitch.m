@@ -30,6 +30,7 @@
     UIView *knob;
     UIImageView *onImageView;
     UIImageView *offImageView;
+    UIImageView *knobImageView;
     UILabel * textLabel;
     CGRect inactiveTextFrame;
     CGRect activeTextFrame;
@@ -40,6 +41,7 @@
     BOOL isAnimating;
     
     UIPanGestureRecognizer * _panGestureRecognizer;
+    UITapGestureRecognizer * _tapGestureRecognizer;
 }
 
 - (void)showOn:(BOOL)animated;
@@ -150,12 +152,12 @@
     
     // images
     onImageView = [[UIImageView alloc] initWithFrame:CGRectMake(0, 0, self.frame.size.width - self.frame.size.height, self.frame.size.height)];
-    onImageView.alpha = 0;
+    onImageView.alpha = 0.0f;
     onImageView.contentMode = UIViewContentModeCenter;
     [self addSubview:onImageView];
     
     offImageView = [[UIImageView alloc] initWithFrame:CGRectMake(self.frame.size.height, 0, self.frame.size.width - self.frame.size.height, self.frame.size.height)];
-    offImageView.alpha = 1.0;
+    offImageView.alpha = 0.0f;
     offImageView.contentMode = UIViewContentModeCenter;
     [self addSubview:offImageView];
     
@@ -169,6 +171,11 @@
     knob.layer.shadowOffset = CGSizeMake(0, 3);
     knob.layer.masksToBounds = NO;
     knob.userInteractionEnabled = YES;
+    
+    knobImageView = [[UIImageView alloc] initWithFrame:knob.bounds];
+    knobImageView.backgroundColor = [UIColor clearColor];
+    knobImageView.contentMode = UIViewContentModeCenter;
+    [knob addSubview:knobImageView];
     
     inactiveTextFrame = CGRectMake(self.frame.size.height + 2.0f, 0.0f, self.frame.size.width-self.frame.size.height, self.frame.size.height);
     activeTextFrame = CGRectMake(10.0f, 0.0f, self.frame.size.width-10.0f, self.frame.size.height);
@@ -184,7 +191,13 @@
     
     _panGestureRecognizer = [[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(handleSwipe:)];
     [self addGestureRecognizer:_panGestureRecognizer];
+    
+    _tapGestureRecognizer = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(handleTap:)];
+    [self addGestureRecognizer:_tapGestureRecognizer];
+    
     isAnimating = NO;
+    _iconDisplayType = SevenSwitchIconDisplayTypeBackground;
+    [self setOn:NO animated:NO];
 }
 
 - (void) handleSwipe:(UIPanGestureRecognizer*) gesture {
@@ -198,6 +211,13 @@
             if(self.isOn){[self setOn:NO animated:YES];
                 [self sendActionsForControlEvents:UIControlEventValueChanged];}
         }
+    }
+}
+
+- (void) handleTap:(UITapGestureRecognizer *) gesture {
+    if (!isAnimating) {
+        [self setOn:![self isOn] animated:YES];
+        [self sendActionsForControlEvents:UIControlEventValueChanged];
     }
 }
 
@@ -452,8 +472,7 @@
                 knob.frame = CGRectMake(self.bounds.size.width - (normalKnobWidth + 1), knob.frame.origin.y, normalKnobWidth, knob.frame.size.height);
             background.backgroundColor = self.onTintColor;
             background.layer.borderColor = self.onTintColor.CGColor;
-            onImageView.alpha = 1.0;
-            offImageView.alpha = 0;
+            [self setImagesForState:YES];
             textLabel.textColor = self.textActiveColor;
             textLabel.frame = activeTextFrame;
             
@@ -472,8 +491,7 @@
         textLabel.textColor = self.textActiveColor;
         textLabel.frame = activeTextFrame;
         //            textLabel.textAlignment = NSTextAlignmentRight;
-        onImageView.alpha = 1.0;
-        offImageView.alpha = 0;
+        [self setImagesForState:YES];
     }
     
     currentVisualValue = YES;
@@ -505,8 +523,7 @@
                 //                textLabel.textAlignment = NSTextAlignmentLeft;
             }
             background.layer.borderColor = self.borderColor.CGColor;
-            onImageView.alpha = 0;
-            offImageView.alpha = 1.0;
+            [self setImagesForState:NO];
         } completion:^(BOOL finished) {
             isAnimating = NO;
         }];
@@ -527,11 +544,44 @@
             //            textLabel.textAlignment = NSTextAlignmentLeft;
         }
         background.layer.borderColor = self.borderColor.CGColor;
-        onImageView.alpha = 0;
-        offImageView.alpha = 1.0;
+        [self setImagesForState:NO];
+
     }
     
     currentVisualValue = NO;
+}
+
+- (void) setImagesForState:(BOOL)isOn
+{
+    if (isOn) {
+        switch ([ self iconDisplayType]) {
+            case SevenSwitchIconDisplayTypeBackground:
+                onImageView.alpha = 1.0f;
+                offImageView.alpha = 0.0f;
+                knobImageView.alpha = 0.0f;
+                break;
+            case SevenSwitchIconDisplayTypeKnob:
+                onImageView.alpha = 0.0f;
+                offImageView.alpha = 0.0f;
+                knobImageView.alpha = 1.0f;
+                knobImageView.image = [self onImage];
+                break;
+        }
+    } else {
+        switch ([ self iconDisplayType]) {
+            case SevenSwitchIconDisplayTypeBackground:
+                onImageView.alpha = 0.0f;
+                offImageView.alpha = 1.0f;
+                knobImageView.alpha = 0.0f;
+                break;
+            case SevenSwitchIconDisplayTypeKnob:
+                onImageView.alpha = 0.0f;
+                offImageView.alpha = 0.0f;
+                knobImageView.alpha = 1.0f;
+                knobImageView.image = [self offImage];
+                break;
+        }
+    }
 }
 
 - (UIColor *)onColor {
